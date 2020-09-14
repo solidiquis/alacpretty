@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+	"strings"
 )
 
 const alacrittyConfig string = "/Users/benjamin/dotfiles/alacritty.yml"
@@ -42,52 +43,22 @@ func changeOpacity(fileContent *string, opacity float64) {
 }
 
 func changeTheme(fileContent *string, theme string) {
-	fileContentBytes := []byte(*fileContent)
-
 	newTheme := func(theme string) string {
 		switch theme {
-		case "solarized_light":
-			return solarizedLight
 		case "ayu_dark":
 			return ayuDark
+		case "after_glow":
+			return afterGlow
+		case "solarized_light":
+			return solarizedLight
 		default:
 			return defaultTheme
 		}
 	}(theme)
-
-	setTheme := func(settings []string, regex string) {
-		for _, i := range settings {
-			pattern := fmt.Sprintf("%s:%s", i, regex)
-			re, _ := regexp.Compile(pattern)
-
-			matchInNew := re.Match([]byte(newTheme))
-			matchInOld := re.Match([]byte(fileContentBytes))
-
-			if matchInOld && matchInNew {
-				newSettings := re.Find([]byte(newTheme))
-				newSettings = append(newSettings, '\n')
-				*fileContent = re.ReplaceAllString(*fileContent, string(newSettings))
-			} else {
-				*fileContent = re.ReplaceAllString(*fileContent, string(""))
-			}
-		}
-	}
-
-	primarySettings := []string{
-		"primary",
-	}
-
-	colorSettings := []string{
-		"normal",
-		"bright",
-		"dim",
-	}
-
-	groundsTemplateString := "(?:\\n\\s+(background|foreground):.*){2}"
-	colorTemplateString := "(?:\\n\\s+(black|red|green|yellow|blue|magenta|cyan|white):.*){8}"
-
-	setTheme(primarySettings, groundsTemplateString)
-	setTheme(colorSettings, colorTemplateString)
+	newTheme = strings.Trim(newTheme, "\n")
+	alacrittyColors := "\\bcolors:.*(?:\\n\\s{2,}.+)+"
+	regex, _ := regexp.Compile(alacrittyColors)
+	*fileContent = regex.ReplaceAllString(*fileContent, newTheme)
 }
 
 func applyChanges(newContent string) {
@@ -107,18 +78,23 @@ func applyChanges(newContent string) {
 func main() {
 	fontSize := flag.Int("fs", 0, "font size")
 	opacity := flag.Float64("op", 0.0, "opacity")
-	theme := flag.String("th", "default", "theme")
+	theme := flag.String("th", "", "theme")
+	interactive_mode := flag.Bool("i", false, "interactive mode")
 	flag.Parse()
 
 	content := readFileToString()
-	if *fontSize > 0 {
-		changeFontSize(&content, *fontSize)
-	}
-	if *opacity > 0.0 {
-		changeOpacity(&content, *opacity)
-	}
-	if *theme != "" {
-		changeTheme(&content, *theme)
+	if *interactive_mode {
+		fmt.Println("TODO")
+	} else {
+		if *fontSize > 0 {
+			changeFontSize(&content, *fontSize)
+		}
+		if *opacity > 0.0 {
+			changeOpacity(&content, *opacity)
+		}
+		if *theme != "" {
+			changeTheme(&content, *theme)
+		}
 	}
 
 	applyChanges(content)
