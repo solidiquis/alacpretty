@@ -45,11 +45,19 @@ func changeOpacity(fileContent *string, opacity float64) {
 func changeTheme(fileContent *string, theme string) {
 	newTheme := func(theme string) string {
 		switch theme {
-		case "ayu_dark":
+		case "argonaut":
+			return argonaut
+		case "ayu_dark", "Ayu Dark":
 			return ayuDark
-		case "after_glow":
+		case "ayu_mirage", "Ayu Mirage":
+			return ayuMirage
+		case "after_glow", "After Glow":
 			return afterGlow
-		case "solarized_light":
+		case "base16_default_dark", "Base16 Default Dark":
+			return base16DefaultDark
+		case "blood_moon", "Blood Moon":
+			return bloodMoon
+		case "solarized_light", "Solarized Light":
 			return solarizedLight
 		default:
 			return defaultTheme
@@ -84,7 +92,7 @@ func main() {
 
 	content := readFileToString()
 	if *interactive_mode {
-		fmt.Println("TODO")
+		shuffleThemes(&content)
 	} else {
 		if *fontSize > 0 {
 			changeFontSize(&content, *fontSize)
