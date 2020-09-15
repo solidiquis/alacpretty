@@ -7,7 +7,7 @@ import (
 	"github.com/gizak/termui/v3/widgets"
 )
 
-func shuffleThemes(fileContent *string) {
+func themeShuffler(fileContent *string) {
 	if err := ui.Init(); err != nil {
 		log.Fatalf("Failed to initialize termui: %v", err)
 	}
@@ -22,7 +22,7 @@ func shuffleThemes(fileContent *string) {
 		"After Glow",
 		"Base16 Default Dark",
 		"Blood Moon",
-		"Default",
+		"Default Theme",
 		"Solarized Light",
 	}
 	themesList.TextStyle = ui.NewStyle(ui.ColorYellow)
@@ -35,13 +35,11 @@ func shuffleThemes(fileContent *string) {
 	for {
 		e := <-uiEvents
 		switch e.ID {
-		case "q", "<C-c>":
+		case "q", "<C-c>", "<Enter>":
 			return
 		case "j", "<Down>":
 			themesList.ScrollDown()
 		case "k", "<Up>":
-			themesList.ScrollUp()
-		case "<Enter>":
 			themesList.ScrollUp()
 		}
 
@@ -52,3 +50,7 @@ func shuffleThemes(fileContent *string) {
 		ui.Render(themesList)
 	}
 }
+
+// func determineCurrentTheme(fileContent *string) {
+// TODO
+// }
