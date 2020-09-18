@@ -13,7 +13,7 @@ func main() {
 
 	content := readFileToString()
 	if *interactive_mode {
-		themeShuffler(&content)
+		widgetsController(&content)
 	} else {
 		if *fontSize > 0 {
 			changeFontSize(&content, *fontSize)
@@ -24,7 +24,6 @@ func main() {
 		if *theme != "" {
 			changeTheme(&content, *theme)
 		}
+		applyChanges(content)
 	}
-
-	applyChanges(content)
 }
