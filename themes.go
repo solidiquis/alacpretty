@@ -1,5 +1,20 @@
 package main
 
+var allThemes = make(map[string]string)
+
+func init() {
+	allThemes = map[string]string{
+		"After Glow":          afterGlow,
+		"Argonaut":            argonaut,
+		"Ayu Dark":            ayuDark,
+		"Ayu Mirage":          ayuMirage,
+		"Base16 Default Dark": base16DefaultDark,
+		"Blood Moon":          bloodMoon,
+		"Default Theme":       defaultTheme,
+		"Solarized Light":     solarizedLight,
+	}
+}
+
 const afterGlow string = `
 colors:
 

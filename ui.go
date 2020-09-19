@@ -14,7 +14,6 @@ func init() {
 }
 
 func themeShuffler(fileContent *string) (*widgets.List, func()) {
-	// TODO: initialize with current theme
 	themesList := widgets.NewList()
 	themesList.Title = "Themes"
 	themesList.Rows = []string{
@@ -30,6 +29,13 @@ func themeShuffler(fileContent *string) (*widgets.List, func()) {
 	themesList.TextStyle = ui.NewStyle(ui.ColorYellow)
 	themesList.WrapText = false
 	themesList.SetRect(0, 0, 25, 8)
+
+	currentTheme := currentTheme(fileContent)
+	for index, theme := range themesList.Rows {
+		if currentTheme == theme {
+			themesList.SelectedRow = index
+		}
+	}
 
 	setThemeState := func() {
 		uiEvents := ui.PollEvents()
@@ -57,12 +63,10 @@ func themeShuffler(fileContent *string) (*widgets.List, func()) {
 }
 
 func opacityGaugeAdjuster(fileContent *string) (*widgets.Gauge, func()) {
-	// TODO: initialize with current opacity
-
 	opacityGauge := widgets.NewGauge()
 	opacityGauge.Title = "Opacity"
 	opacityGauge.SetRect(0, 8, 50, 11)
-	opacityGauge.Percent = 100
+	opacityGauge.Percent = int(currentOpacity(fileContent) * 100)
 	opacityGauge.BarColor = ui.ColorYellow
 	opacityGauge.LabelStyle = ui.NewStyle(ui.ColorBlue)
 	opacityGauge.BorderStyle.Fg = ui.ColorWhite

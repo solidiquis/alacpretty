@@ -3,51 +3,59 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
-var alacrittyYamlPath string
+const (
+	fontRegex    = "size:\\s*\\d{2}\\.0"
+	opacityRegex = "background_opacity:\\s*\\d+.\\d+"
+	colorsRegex  = "\\bcolors:.*(?:\\n\\s{2,}.+)+"
+)
 
-func init() {
-	findAlacrittyYaml()
-}
+func currentTheme(fileContent *string) string {
+	fileContentBytes := []byte(*fileContent)
 
-func must(err error) {
-	if err != nil {
-		panic(err)
+	for k, v := range allThemes {
+		match, _ := regexp.Match(v, fileContentBytes)
+		if match {
+			return k
+		}
 	}
+
+	return "defaultTheme"
 }
 
-func findAlacrittyYaml() {
-	homeDir, err := os.UserHomeDir()
+func currentOpacity(fileContent *string) float64 {
+	regex, _ := regexp.Compile(opacityRegex)
+	matchBytes := regex.Find([]byte(*fileContent))
+
+	var matchString string
+	if matchBytes != nil {
+		matchString = string(matchBytes)
+	}
+	result := strings.Split(matchString, ":")
+	opacityValueString := strings.Trim(result[len(result)-1], " ")
+
+	opacityValue, err := strconv.ParseFloat(opacityValueString, 2)
 	must(err)
 
-	alacrittyYamlPath = fmt.Sprintf("%s/.config/alacritty/alacritty.yml", homeDir)
-	_, err = os.Stat(alacrittyYamlPath)
-	must(err)
-}
-
-func readFileToString() string {
-	text, err := ioutil.ReadFile(alacrittyYamlPath)
-	must(err)
-
-	return string(text)
+	return opacityValue
 }
 
 func changeFontSize(fileContent *string, fontSize int) {
 	newFontSize := fmt.Sprintf("size: %d.0", fontSize)
 
-	regex, _ := regexp.Compile("size:\\s*\\d{2}\\.0")
+	regex, _ := regexp.Compile(fontRegex)
 	*fileContent = regex.ReplaceAllString(*fileContent, newFontSize)
 }
 
 func changeOpacity(fileContent *string, opacity float64) {
 	newOpacity := fmt.Sprintf("background_opacity: %.1f", opacity)
 
-	regex, _ := regexp.Compile("background_opacity:\\s*\\d+.\\d+")
+	regex, _ := regexp.Compile(opacityRegex)
 	*fileContent = regex.ReplaceAllString(*fileContent, newOpacity)
 }
 
@@ -74,9 +82,7 @@ func changeTheme(fileContent *string, theme string) {
 	}(theme)
 	newTheme = strings.Trim(newTheme, "\n")
 
-	alacrittyColors := "\\bcolors:.*(?:\\n\\s{2,}.+)+"
-	regex, _ := regexp.Compile(alacrittyColors)
-
+	regex, _ := regexp.Compile(colorsRegex)
 	*fileContent = regex.ReplaceAllString(*fileContent, newTheme)
 }
 

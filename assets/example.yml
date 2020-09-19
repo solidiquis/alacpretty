@@ -1,0 +1,90 @@
+window:
+  dynamic_title: true
+  dimensions:
+    columns: 0
+    lines: 0
+
+  position:
+    x: 50
+    y: 50
+  #startup_mode: SimpleFullscreen
+
+  padding:
+    x: 5
+    y: 0
+
+  dynamic_padding: false
+  decorations: none
+
+scrolling:
+  history: 50000
+  multiplier: 3
+
+font:
+  normal:
+    family: Source Code Pro for Powerline
+    style: Regular
+
+  bold:
+    family: Source Code Pro for Powerline
+    style: Bold
+
+  italic:
+    family: Source Code Pro for Powerline
+    style: Bold Italic
+
+  size: 16.0
+
+  offset:
+    x: 2
+    y: 4
+
+  glyph_offset:
+    x: 0
+    y: 0
+
+  use_thin_strokes: true
+
+draw_bold_text_with_bright_colors: true
+
+colors:
+
+  primary:
+    background: '#fdf6e3'
+    foreground: '#657b83'
+
+  normal:
+    black:   '#073642'
+    red:     '#dc322f'
+    green:   '#859900'
+    yellow:  '#b58900'
+    blue:    '#268bd2'
+    magenta: '#d33682'
+    cyan:    '#2aa198'
+    white:   '#eee8d5'
+
+  bright:
+    black:   '#002b36'
+    red:     '#cb4b16'
+    green:   '#586e75'
+    yellow:  '#657b83'
+    blue:    '#839496'
+    magenta: '#6c71c4'
+    cyan:    '#93a1a1'
+    white:   '#fdf6e3'
+
+background_opacity: 0.9
+
+key_bindings:
+    - { key: J,        mods: Alt,     chars: "\x1bj"                       }
+    - { key: K,        mods: Alt,     chars: "\x1bk"                       }
+    - { key: H,        mods: Alt,     chars: "\x1bh"                       }
+    - { key: L,        mods: Alt,     chars: "\x1bl"                       }
+    - { key: T,        mods: Alt,     chars: "\x1bt"                       }
+    - { key: W,        mods: Alt,     chars: "\x1bw"                       }
+    - { key: P,        mods: Alt,     chars: "\x1bp"                       }
+    - { key: N,        mods: Alt,     chars: "\x1bn"                       }
+    - { key: D,        mods: Alt,     chars: "\x1bd"                       }
+    - { key: E,        mods: Alt,     chars: "\x1be"                       }
+    - { key: X,        mods: Alt,     chars: "\x1bx"                       }
+
