@@ -14,18 +14,14 @@ func init() {
 }
 
 func themeShuffler(fileContent *string) (*widgets.List, func()) {
+	var rows []string
+	for theme := range allThemes {
+		rows = append(rows, theme)
+	}
+
 	themesList := widgets.NewList()
 	themesList.Title = "Themes"
-	themesList.Rows = []string{
-		"Argonaut",
-		"Ayu Dark",
-		"Ayu Mirage",
-		"After Glow",
-		"Base16 Default Dark",
-		"Blood Moon",
-		"Default Theme",
-		"Solarized Light",
-	}
+	themesList.Rows = rows
 	themesList.TextStyle = ui.NewStyle(ui.ColorYellow)
 	themesList.WrapText = false
 	themesList.SetRect(0, 0, 25, 8)
