@@ -14,7 +14,7 @@ func init() {
 	}
 }
 
-func themeShuffler(fileContent *string) (*widgets.List, func(chan string)) {
+func themeShuffler(fileContent *string) (*widgets.List, func() string) {
 	var rows []string
 	for theme := range allThemes {
 		rows = append(rows, theme)
@@ -35,15 +35,14 @@ func themeShuffler(fileContent *string) (*widgets.List, func(chan string)) {
 		}
 	}
 
-	setThemeState := func(eChan chan string) {
+	setThemeState := func() string {
 		uiEvents := ui.PollEvents()
 
 		for {
 			e := <-uiEvents
 			switch e.ID {
-			case "<C-c>", "q":
-				eChan <- e.ID
-				return
+			case "<C-c>", "q", "<C-h>", "<C-j>", "<C-k>", "<C-l>":
+				return e.ID
 			case "j", "<Down>":
 				themesList.ScrollDown()
 			case "k", "<Up>":
@@ -61,7 +60,7 @@ func themeShuffler(fileContent *string) (*widgets.List, func(chan string)) {
 	return themesList, setThemeState
 }
 
-func opacityGaugeAdjuster(fileContent *string) (*widgets.Gauge, func(chan string)) {
+func opacityGaugeAdjuster(fileContent *string) (*widgets.Gauge, func() string) {
 	opacityGauge := widgets.NewGauge()
 	opacityGauge.Title = "Opacity"
 	opacityGauge.SetRect(0, 8, 50, 11)
@@ -70,7 +69,7 @@ func opacityGaugeAdjuster(fileContent *string) (*widgets.Gauge, func(chan string
 	opacityGauge.LabelStyle = ui.NewStyle(ui.ColorBlue)
 	opacityGauge.BorderStyle.Fg = ui.ColorWhite
 
-	setGaugeState := func(eChan chan string) {
+	setGaugeState := func() string {
 		uiEvents := ui.PollEvents()
 
 		for {
@@ -79,9 +78,8 @@ func opacityGaugeAdjuster(fileContent *string) (*widgets.Gauge, func(chan string
 			var tmp int
 
 			switch e.ID {
-			case "<C-c>", "q":
-				eChan <- e.ID
-				return
+			case "<C-c>", "q", "<C-h>", "<C-j>", "<C-k>", "<C-l>":
+				return e.ID
 			case "l":
 				tmp = opacityGauge.Percent + 10
 			case "h":
@@ -128,13 +126,11 @@ func widgetsController(fileContent *string) {
 		opacityGauge,
 	)
 
-	uiEventChannel := make(chan string)
-	go setThemesListState(uiEventChannel)
+	e := setThemesListState()
 
 	var activeRow int
 	var activeWidget ui.Drawable
 	for {
-		e := <-uiEventChannel
 		switch e {
 		case "<C-j>", "<Down>":
 			activeRow--
@@ -168,12 +164,12 @@ func widgetsController(fileContent *string) {
 			aw.BorderStyle.Fg = ui.ColorYellow
 			ui.Render(aw)
 			currentWidget = aw
-			go setThemesListState(uiEventChannel)
+			e = setThemesListState()
 		case *widgets.Gauge:
 			aw.BorderStyle.Fg = ui.ColorYellow
 			ui.Render(aw)
 			currentWidget = aw
-			go setGaugeState(uiEventChannel)
+			e = setGaugeState()
 		}
 	}
 }
