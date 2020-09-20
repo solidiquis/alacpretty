@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"math"
 
 	ui "github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
@@ -13,7 +14,7 @@ func init() {
 	}
 }
 
-func themeShuffler(fileContent *string) (*widgets.List, func()) {
+func themeShuffler(fileContent *string) (*widgets.List, func(chan string)) {
 	var rows []string
 	for theme := range allThemes {
 		rows = append(rows, theme)
@@ -25,6 +26,7 @@ func themeShuffler(fileContent *string) (*widgets.List, func()) {
 	themesList.TextStyle = ui.NewStyle(ui.ColorYellow)
 	themesList.WrapText = false
 	themesList.SetRect(0, 0, 25, 8)
+	themesList.BorderStyle.Fg = ui.ColorWhite
 
 	currentTheme := currentTheme(fileContent)
 	for index, theme := range themesList.Rows {
@@ -33,13 +35,14 @@ func themeShuffler(fileContent *string) (*widgets.List, func()) {
 		}
 	}
 
-	setThemeState := func() {
+	setThemeState := func(eChan chan string) {
 		uiEvents := ui.PollEvents()
 
 		for {
 			e := <-uiEvents
 			switch e.ID {
-			case "q", "<C-c>", "<Enter>":
+			case "<C-c>", "q":
+				eChan <- e.ID
 				return
 			case "j", "<Down>":
 				themesList.ScrollDown()
@@ -58,7 +61,7 @@ func themeShuffler(fileContent *string) (*widgets.List, func()) {
 	return themesList, setThemeState
 }
 
-func opacityGaugeAdjuster(fileContent *string) (*widgets.Gauge, func()) {
+func opacityGaugeAdjuster(fileContent *string) (*widgets.Gauge, func(chan string)) {
 	opacityGauge := widgets.NewGauge()
 	opacityGauge.Title = "Opacity"
 	opacityGauge.SetRect(0, 8, 50, 11)
@@ -67,7 +70,7 @@ func opacityGaugeAdjuster(fileContent *string) (*widgets.Gauge, func()) {
 	opacityGauge.LabelStyle = ui.NewStyle(ui.ColorBlue)
 	opacityGauge.BorderStyle.Fg = ui.ColorWhite
 
-	setGaugeState := func() {
+	setGaugeState := func(eChan chan string) {
 		uiEvents := ui.PollEvents()
 
 		for {
@@ -76,7 +79,8 @@ func opacityGaugeAdjuster(fileContent *string) (*widgets.Gauge, func()) {
 			var tmp int
 
 			switch e.ID {
-			case "q", "<C-c>", "<Enter>":
+			case "<C-c>", "q":
+				eChan <- e.ID
 				return
 			case "l":
 				tmp = opacityGauge.Percent + 10
@@ -101,31 +105,75 @@ func opacityGaugeAdjuster(fileContent *string) (*widgets.Gauge, func()) {
 
 func widgetsController(fileContent *string) {
 	defer ui.Close()
+
 	themesList, setThemesListState := themeShuffler(fileContent)
 	opacityGauge, setGaugeState := opacityGaugeAdjuster(fileContent)
 
-	widgets := []ui.Drawable{
+	rowOne := []ui.Drawable{
 		themesList,
+	}
+	rowTwo := []ui.Drawable{
 		opacityGauge,
 	}
+	widgetGrid := [][]ui.Drawable{
+		rowOne,
+		rowTwo,
+	}
 
-	ui.Render(widgets...)
+	var currentWidget ui.Drawable = themesList // default widget
+	currentWidget.(*widgets.List).BorderStyle.Fg = ui.ColorYellow
 
-	//uiEvents := ui.PollEvents()
+	ui.Render(
+		themesList,
+		opacityGauge,
+	)
 
-	// theme shuffler is the default active widget
-	//setThemesListState()
+	uiEventChannel := make(chan string)
+	go setThemesListState(uiEventChannel)
 
-	// Bookmark
-	//var i int
-	//for {
-	//e := <-uiEvents
-	//switch e.ID {
-	//case "<C-j>", "<Down>":
+	var activeRow int
+	var activeWidget ui.Drawable
+	for {
+		e := <-uiEventChannel
+		switch e {
+		case "<C-j>", "<Down>":
+			activeRow--
+			if activeRow < 0 {
+				activeRow = len(widgetGrid) - int(math.Abs(float64(activeRow)))
+			}
+		case "<C-k>", "<Up>":
+			activeRow++
+			if activeRow > len(widgetGrid)-1 {
+				activeRow = 0
+			}
+		case "<C-c>", "q":
+			return
+		}
+		activeWidget = widgetGrid[activeRow][0] // for now..
 
-	//}
-	//}
+		// Why isn't this section of code DRY?
+		// Drawables have different underlying types hence
+		// why type assertion switch statements are necessary.
+		switch cw := currentWidget.(type) {
+		case *widgets.List:
+			cw.BorderStyle.Fg = ui.ColorWhite
+			ui.Render(cw)
+		case *widgets.Gauge:
+			cw.BorderStyle.Fg = ui.ColorWhite
+			ui.Render(cw)
+		}
 
-	setGaugeState()
-	setThemesListState()
+		switch aw := activeWidget.(type) {
+		case *widgets.List:
+			aw.BorderStyle.Fg = ui.ColorYellow
+			ui.Render(aw)
+			currentWidget = aw
+			go setThemesListState(uiEventChannel)
+		case *widgets.Gauge:
+			aw.BorderStyle.Fg = ui.ColorYellow
+			ui.Render(aw)
+			currentWidget = aw
+			go setGaugeState(uiEventChannel)
+		}
+	}
 }
