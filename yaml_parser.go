@@ -10,9 +10,9 @@ import (
 )
 
 const (
-	fontRegex    = `size:\s*\d{2}\.0`
-	opacityRegex = `background_opacity:\s*\d+.\d+`
-	colorsRegex  = `\bcolors:.*(?:\n\s{2,}.+)+`
+	fontSizeRegex = `size:\s*\d{2}\.0`
+	opacityRegex  = `background_opacity:\s*\d+.\d+`
+	colorsRegex   = `\bcolors:.*(?:\n\s{2,}.+)+`
 )
 
 func currentTheme(fileContent *string) string {
@@ -45,10 +45,22 @@ func currentOpacity(fileContent *string) float64 {
 	return opacityValue
 }
 
+func currentFontSize(fileContent *string) int {
+	regex, _ := regexp.Compile(fontSizeRegex)
+	matchBytes := regex.Find([]byte(*fileContent))
+	matchString := string(matchBytes)
+	regex, _ = regexp.Compile(`\d+`)
+	matchBytes = regex.Find([]byte(matchString))
+	matchString = string(matchBytes)
+	fontSize, err := strconv.Atoi(matchString)
+	must(err)
+	return fontSize
+}
+
 func changeFontSize(fileContent *string, fontSize int) {
 	newFontSize := fmt.Sprintf("size: %d.0", fontSize)
 
-	regex, _ := regexp.Compile(fontRegex)
+	regex, _ := regexp.Compile(fontSizeRegex)
 	*fileContent = regex.ReplaceAllString(*fileContent, newFontSize)
 }
 

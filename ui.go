@@ -101,6 +101,47 @@ func opacityGaugeAdjuster(fileContent *string) (*widgets.Gauge, func() string) {
 	return opacityGauge, setGaugeState
 }
 
+func fontSizeAdjuster(fileContent *string) (*widgets.Gauge, func() string) {
+	opacityGauge := widgets.NewGauge()
+	opacityGauge.Title = "Font Size (requires restart)"
+	opacityGauge.SetRect(0, 8, 50, 11)
+	opacityGauge.Percent = int(currentOpacity(fileContent) * 100)
+	opacityGauge.BarColor = ui.ColorYellow
+	opacityGauge.LabelStyle = ui.NewStyle(ui.ColorBlue)
+	opacityGauge.BorderStyle.Fg = ui.ColorWhite
+
+	setGaugeState := func() string {
+		uiEvents := ui.PollEvents()
+
+		for {
+			e := <-uiEvents
+			var newOpacity float64
+			var tmp int
+
+			switch e.ID {
+			case "<C-c>", "q", "<C-h>", "<C-j>", "<C-k>", "<C-l>":
+				return e.ID
+			case "l":
+				tmp = opacityGauge.Percent + 10
+			case "h":
+				tmp = opacityGauge.Percent - 10
+			default:
+				tmp = 1925 // Cthulhu Fhtagn
+			}
+
+			if tmp >= 0 && tmp <= 100 {
+				newOpacity = float64(tmp) / 100
+				opacityGauge.Percent = tmp
+				changeOpacity(fileContent, newOpacity)
+				applyChanges(*fileContent)
+				ui.Render(opacityGauge)
+			}
+		}
+	}
+
+	return opacityGauge, setGaugeState
+}
+
 func widgetsController(fileContent *string) {
 	defer ui.Close()
 
@@ -147,9 +188,6 @@ func widgetsController(fileContent *string) {
 		}
 		activeWidget = widgetGrid[activeRow][0] // for now..
 
-		// Why isn't this section of code DRY?
-		// Drawables have different underlying types hence
-		// why type assertion switch statements are necessary.
 		switch cw := currentWidget.(type) {
 		case *widgets.List:
 			cw.BorderStyle.Fg = ui.ColorWhite
