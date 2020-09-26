@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"math"
+	"strconv"
 
 	ui "github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
@@ -35,13 +37,13 @@ func themeShuffler(fileContent *string) (*widgets.List, func() string) {
 		}
 	}
 
-	setThemeState := func() string {
+	setState := func() string {
 		uiEvents := ui.PollEvents()
 
 		for {
 			e := <-uiEvents
 			switch e.ID {
-			case "<C-c>", "q", "<C-h>", "<C-j>", "<C-k>", "<C-l>":
+			case "<C-c>", "q", "H", "J", "K", "L":
 				return e.ID
 			case "j", "<Down>":
 				themesList.ScrollDown()
@@ -49,18 +51,18 @@ func themeShuffler(fileContent *string) (*widgets.List, func() string) {
 				themesList.ScrollUp()
 			}
 
-			currentTheme := themesList.Rows[themesList.SelectedRow]
-			changeTheme(fileContent, currentTheme)
+			newTheme := themesList.Rows[themesList.SelectedRow]
+			changeTheme(fileContent, newTheme)
 			applyChanges(*fileContent)
 
 			ui.Render(themesList)
 		}
 	}
 
-	return themesList, setThemeState
+	return themesList, setState
 }
 
-func opacityGaugeAdjuster(fileContent *string) (*widgets.Gauge, func() string) {
+func opacityAdjuster(fileContent *string) (*widgets.Gauge, func() string) {
 	opacityGauge := widgets.NewGauge()
 	opacityGauge.Title = "Opacity"
 	opacityGauge.SetRect(0, 8, 50, 11)
@@ -69,7 +71,7 @@ func opacityGaugeAdjuster(fileContent *string) (*widgets.Gauge, func() string) {
 	opacityGauge.LabelStyle = ui.NewStyle(ui.ColorBlue)
 	opacityGauge.BorderStyle.Fg = ui.ColorWhite
 
-	setGaugeState := func() string {
+	setState := func() string {
 		uiEvents := ui.PollEvents()
 
 		for {
@@ -78,7 +80,7 @@ func opacityGaugeAdjuster(fileContent *string) (*widgets.Gauge, func() string) {
 			var tmp int
 
 			switch e.ID {
-			case "<C-c>", "q", "<C-h>", "<C-j>", "<C-k>", "<C-l>":
+			case "<C-c>", "q", "H", "J", "K", "L":
 				return e.ID
 			case "l":
 				tmp = opacityGauge.Percent + 10
@@ -98,58 +100,80 @@ func opacityGaugeAdjuster(fileContent *string) (*widgets.Gauge, func() string) {
 		}
 	}
 
-	return opacityGauge, setGaugeState
+	return opacityGauge, setState
 }
 
-func fontSizeAdjuster(fileContent *string) (*widgets.Gauge, func() string) {
-	opacityGauge := widgets.NewGauge()
-	opacityGauge.Title = "Font Size (requires restart)"
-	opacityGauge.SetRect(0, 8, 50, 11)
-	opacityGauge.Percent = int(currentOpacity(fileContent) * 100)
-	opacityGauge.BarColor = ui.ColorYellow
-	opacityGauge.LabelStyle = ui.NewStyle(ui.ColorBlue)
-	opacityGauge.BorderStyle.Fg = ui.ColorWhite
+func fontSizeAdjuster(fileContent *string) (*widgets.List, func() string) {
+	rows := make([]string, 27)
 
-	setGaugeState := func() string {
+	for i := 6; i < 33; i++ {
+		rows[i-6] = fmt.Sprintf("%d", i)
+	}
+
+	fsList := widgets.NewList()
+	fsList.Title = "Font Sizes"
+	fsList.Rows = rows
+	fsList.TextStyle = ui.NewStyle(ui.ColorYellow)
+	fsList.WrapText = false
+	fsList.SetRect(26, 0, 50, 8)
+	fsList.BorderStyle.Fg = ui.ColorWhite
+
+	currentFS := currentFontSize(fileContent)
+	for index, fontSize := range fsList.Rows {
+		fs, err := strconv.Atoi(fontSize)
+		must(err)
+
+		if currentFS == fs {
+			fsList.SelectedRow = index
+		}
+	}
+
+	setState := func() string {
 		uiEvents := ui.PollEvents()
 
 		for {
 			e := <-uiEvents
-			var newOpacity float64
-			var tmp int
-
 			switch e.ID {
-			case "<C-c>", "q", "<C-h>", "<C-j>", "<C-k>", "<C-l>":
+			case "<C-c>", "q", "H", "J", "K", "L":
 				return e.ID
-			case "l":
-				tmp = opacityGauge.Percent + 10
-			case "h":
-				tmp = opacityGauge.Percent - 10
-			default:
-				tmp = 1925 // Cthulhu Fhtagn
+			case "j":
+				fsList.ScrollDown()
+			case "k":
+				fsList.ScrollUp()
 			}
 
-			if tmp >= 0 && tmp <= 100 {
-				newOpacity = float64(tmp) / 100
-				opacityGauge.Percent = tmp
-				changeOpacity(fileContent, newOpacity)
-				applyChanges(*fileContent)
-				ui.Render(opacityGauge)
-			}
+			newFS, err := strconv.Atoi(fsList.Rows[fsList.SelectedRow])
+			must(err)
+
+			changeFontSize(fileContent, newFS)
+			applyChanges(*fileContent)
+
+			ui.Render(fsList)
 		}
 	}
 
-	return opacityGauge, setGaugeState
+	return fsList, setState
 }
 
 func widgetsController(fileContent *string) {
 	defer ui.Close()
 
-	themesList, setThemesListState := themeShuffler(fileContent)
-	opacityGauge, setGaugeState := opacityGaugeAdjuster(fileContent)
+	themesList, setThemeState := themeShuffler(fileContent)
+	opacityGauge, SetOpacityState := opacityAdjuster(fileContent)
+	fontSizeAdjuster, setFontSizeState := fontSizeAdjuster(fileContent)
+
+	var currentWidget ui.Drawable = themesList // default widget
+	currentWidget.(*widgets.List).BorderStyle.Fg = ui.ColorYellow
+
+	ui.Render(
+		themesList,
+		opacityGauge,
+		fontSizeAdjuster,
+	)
 
 	rowOne := []ui.Drawable{
 		themesList,
+		fontSizeAdjuster,
 	}
 	rowTwo := []ui.Drawable{
 		opacityGauge,
@@ -159,35 +183,45 @@ func widgetsController(fileContent *string) {
 		rowTwo,
 	}
 
-	var currentWidget ui.Drawable = themesList // default widget
-	currentWidget.(*widgets.List).BorderStyle.Fg = ui.ColorYellow
-
-	ui.Render(
-		themesList,
-		opacityGauge,
-	)
-
-	e := setThemesListState()
-
-	var activeRow int
+	var activeRowIndex, activeColumnIndex int
 	var activeWidget ui.Drawable
+
+	e := setThemeState()
+
 	for {
 		switch e {
-		case "<C-j>", "<Down>":
-			activeRow--
-			if activeRow < 0 {
-				activeRow = len(widgetGrid) - int(math.Abs(float64(activeRow)))
-			}
-		case "<C-k>", "<Up>":
-			activeRow++
-			if activeRow > len(widgetGrid)-1 {
-				activeRow = 0
-			}
+		case "J":
+			activeRowIndex--
+		case "K":
+			activeRowIndex++
+		case "H":
+			activeColumnIndex--
+		case "L":
+			activeColumnIndex++
 		case "<C-c>", "q":
 			return
 		}
-		activeWidget = widgetGrid[activeRow][0] // for now..
 
+		if activeRowIndex < 0 {
+			absActiveRowIndex := int(math.Abs(float64(activeRowIndex)))
+			activeRowIndex = len(widgetGrid) - absActiveRowIndex
+		} else if activeRowIndex > len(widgetGrid)-1 {
+			activeRowIndex = 0
+		}
+		activeRow := widgetGrid[activeRowIndex]
+
+		if activeColumnIndex < 0 {
+			absActiveColumnIndex := int(math.Abs(float64(activeColumnIndex)))
+			activeColumnIndex = len(activeRow) - absActiveColumnIndex
+		} else if activeColumnIndex > len(activeRow)-1 {
+			activeColumnIndex = 0
+		}
+		activeColumn := activeRow[activeColumnIndex]
+
+		activeWidget = activeColumn
+
+		// yellow = active widget
+		// white = inactive widget
 		switch cw := currentWidget.(type) {
 		case *widgets.List:
 			cw.BorderStyle.Fg = ui.ColorWhite
@@ -202,12 +236,18 @@ func widgetsController(fileContent *string) {
 			aw.BorderStyle.Fg = ui.ColorYellow
 			ui.Render(aw)
 			currentWidget = aw
-			e = setThemesListState()
+
+			switch aw.Title {
+			case "Themes":
+				e = setThemeState()
+			case "Font Sizes":
+				e = setFontSizeState()
+			}
 		case *widgets.Gauge:
 			aw.BorderStyle.Fg = ui.ColorYellow
 			ui.Render(aw)
 			currentWidget = aw
-			e = setGaugeState()
+			e = SetOpacityState()
 		}
 	}
 }
