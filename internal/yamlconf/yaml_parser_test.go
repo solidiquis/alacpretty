@@ -8,7 +8,7 @@ import (
 
 const exampleYaml string = `
 font:
-  size: 16.0
+  size: 9.0
 
 colors:
 
@@ -63,7 +63,7 @@ func TestCurrentOpacity(t *testing.T) {
 
 func TestCurrentFontSize(t *testing.T) {
 	subject := CurrentFontSize
-	targetValue := 16
+	targetValue := 9
 
 	result := subject(&content)
 	if result != targetValue {

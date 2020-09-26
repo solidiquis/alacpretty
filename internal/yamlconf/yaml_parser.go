@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	fontSizeRegex = `size:\s*\d{2}\.0`
+	fontSizeRegex = `size:\s*\d+\.0`
 	opacityRegex  = `background_opacity:\s*\d+.\d+`
 	colorsRegex   = `\bcolors:.*(?:\n\s{2,}.+)+`
 )
