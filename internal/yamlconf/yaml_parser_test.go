@@ -1,7 +1,9 @@
-package main
+package yamlconf
 
 import (
 	"testing"
+
+	"github.com/solidiquis/alacpretty/internal/utils"
 )
 
 const exampleYaml string = `
@@ -40,7 +42,7 @@ background_opacity: 0.9
 var content string
 
 func TestCurrentTheme(t *testing.T) {
-	subject := currentTheme
+	subject := CurrentTheme
 	targetValue := "Solarized Light"
 
 	result := subject(&content)
@@ -50,7 +52,7 @@ func TestCurrentTheme(t *testing.T) {
 }
 
 func TestCurrentOpacity(t *testing.T) {
-	subject := currentOpacity
+	subject := CurrentOpacity
 	targetValue := 0.9
 
 	result := subject(&content)
@@ -60,7 +62,7 @@ func TestCurrentOpacity(t *testing.T) {
 }
 
 func TestCurrentFontSize(t *testing.T) {
-	subject := currentFontSize
+	subject := CurrentFontSize
 	targetValue := 16
 
 	result := subject(&content)
@@ -70,9 +72,9 @@ func TestCurrentFontSize(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
-	tmp, dir := tmpFile(exampleYaml, "tmp.yml")
-	content = readTmpToString(tmp)
+	tmp, dir := utils.TmpFile(exampleYaml, "tmp.yml")
+	content = utils.ReadTmpToString(tmp)
 	code := m.Run()
-	removeTmpDir(dir)
-	endTest(code)
+	utils.RemoveTmpDir(dir)
+	utils.EndTest(code)
 }

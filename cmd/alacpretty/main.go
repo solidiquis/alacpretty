@@ -2,6 +2,9 @@ package main
 
 import (
 	"flag"
+
+	alacui "github.com/solidiquis/alacpretty/internal/ui"
+	"github.com/solidiquis/alacpretty/internal/yamlconf"
 )
 
 func main() {
@@ -11,19 +14,19 @@ func main() {
 	interactive_mode := flag.Bool("i", false, "interactive mode")
 	flag.Parse()
 
-	content := readFileToString()
+	content := yamlconf.ReadFileToString()
 	if *interactive_mode {
-		widgetsController(&content)
+		alacui.WidgetsController(&content)
 	} else {
 		if *fontSize > 0 {
-			changeFontSize(&content, *fontSize)
+			yamlconf.ChangeFontSize(&content, *fontSize)
 		}
 		if *opacity > 0.0 {
-			changeOpacity(&content, *opacity)
+			yamlconf.ChangeOpacity(&content, *opacity)
 		}
 		if *theme != "" {
-			changeTheme(&content, *theme)
+			yamlconf.ChangeTheme(&content, *theme)
 		}
-		applyChanges(content)
+		yamlconf.ApplyChanges(content)
 	}
 }

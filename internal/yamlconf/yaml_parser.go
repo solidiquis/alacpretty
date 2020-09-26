@@ -1,4 +1,4 @@
-package main
+package yamlconf
 
 import (
 	"bufio"
@@ -7,6 +7,9 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/solidiquis/alacpretty/internal/themes"
+	"github.com/solidiquis/alacpretty/internal/utils"
 )
 
 const (
@@ -15,20 +18,20 @@ const (
 	colorsRegex   = `\bcolors:.*(?:\n\s{2,}.+)+`
 )
 
-func currentTheme(fileContent *string) string {
+func CurrentTheme(fileContent *string) string {
 	fileContentBytes := []byte(*fileContent)
 
-	for k, v := range allThemes {
+	for k, v := range themes.AllThemes {
 		match, _ := regexp.Match(v, fileContentBytes)
 		if match {
 			return k
 		}
 	}
 
-	return "defaultTheme"
+	return "DefaultTheme"
 }
 
-func currentOpacity(fileContent *string) float64 {
+func CurrentOpacity(fileContent *string) float64 {
 	regex, _ := regexp.Compile(opacityRegex)
 	matchBytes := regex.Find([]byte(*fileContent))
 
@@ -40,12 +43,12 @@ func currentOpacity(fileContent *string) float64 {
 	opacityValueString := strings.Trim(result[len(result)-1], " ")
 
 	opacityValue, err := strconv.ParseFloat(opacityValueString, 2)
-	must(err)
+	utils.Must(err)
 
 	return opacityValue
 }
 
-func currentFontSize(fileContent *string) int {
+func CurrentFontSize(fileContent *string) int {
 	regex, _ := regexp.Compile(fontSizeRegex)
 	matchBytes := regex.Find([]byte(*fileContent))
 	matchString := string(matchBytes)
@@ -53,43 +56,43 @@ func currentFontSize(fileContent *string) int {
 	matchBytes = regex.Find([]byte(matchString))
 	matchString = string(matchBytes)
 	fontSize, err := strconv.Atoi(matchString)
-	must(err)
+	utils.Must(err)
 	return fontSize
 }
 
-func changeFontSize(fileContent *string, fontSize int) {
+func ChangeFontSize(fileContent *string, fontSize int) {
 	newFontSize := fmt.Sprintf("size: %d.0", fontSize)
 
 	regex, _ := regexp.Compile(fontSizeRegex)
 	*fileContent = regex.ReplaceAllString(*fileContent, newFontSize)
 }
 
-func changeOpacity(fileContent *string, opacity float64) {
+func ChangeOpacity(fileContent *string, opacity float64) {
 	newOpacity := fmt.Sprintf("background_opacity: %.1f", opacity)
 
 	regex, _ := regexp.Compile(opacityRegex)
 	*fileContent = regex.ReplaceAllString(*fileContent, newOpacity)
 }
 
-func changeTheme(fileContent *string, theme string) {
+func ChangeTheme(fileContent *string, theme string) {
 	newTheme := func(theme string) string {
 		switch theme {
 		case "argonaut":
-			return argonaut
+			return themes.Argonaut
 		case "ayu_dark", "Ayu Dark":
-			return ayuDark
+			return themes.AyuDark
 		case "ayu_mirage", "Ayu Mirage":
-			return ayuMirage
+			return themes.AyuMirage
 		case "after_glow", "After Glow":
-			return afterGlow
+			return themes.AfterGlow
 		case "base16_default_dark", "Base16 Default Dark":
-			return base16DefaultDark
+			return themes.Base16DefaultDark
 		case "blood_moon", "Blood Moon":
-			return bloodMoon
+			return themes.BloodMoon
 		case "solarized_light", "Solarized Light":
-			return solarizedLight
+			return themes.SolarizedLight
 		default:
-			return defaultTheme
+			return themes.DefaultTheme
 		}
 	}(theme)
 	newTheme = strings.Trim(newTheme, "\n")
@@ -98,12 +101,12 @@ func changeTheme(fileContent *string, theme string) {
 	*fileContent = regex.ReplaceAllString(*fileContent, newTheme)
 }
 
-func applyChanges(newContent string) {
+func ApplyChanges(newContent string) {
 	err := os.Truncate(alacrittyYamlPath, 0)
-	must(err)
+	utils.Must(err)
 
 	file, err := os.OpenFile(alacrittyYamlPath, os.O_APPEND|os.O_WRONLY, 0644)
-	must(err)
+	utils.Must(err)
 	defer file.Close()
 
 	writer := bufio.NewWriter(file)

@@ -1,10 +1,14 @@
-package main
+package ui
 
 import (
 	"fmt"
 	"log"
 	"math"
 	"strconv"
+
+	"github.com/solidiquis/alacpretty/internal/themes"
+	"github.com/solidiquis/alacpretty/internal/utils"
+	"github.com/solidiquis/alacpretty/internal/yamlconf"
 
 	ui "github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
@@ -18,7 +22,7 @@ func init() {
 
 func themeShuffler(fileContent *string) (*widgets.List, func() string) {
 	var rows []string
-	for theme := range allThemes {
+	for theme := range themes.AllThemes {
 		rows = append(rows, theme)
 	}
 
@@ -30,7 +34,7 @@ func themeShuffler(fileContent *string) (*widgets.List, func() string) {
 	themesList.SetRect(0, 0, 25, 8)
 	themesList.BorderStyle.Fg = ui.ColorWhite
 
-	currentTheme := currentTheme(fileContent)
+	currentTheme := yamlconf.CurrentTheme(fileContent)
 	for index, theme := range themesList.Rows {
 		if currentTheme == theme {
 			themesList.SelectedRow = index
@@ -52,8 +56,8 @@ func themeShuffler(fileContent *string) (*widgets.List, func() string) {
 			}
 
 			newTheme := themesList.Rows[themesList.SelectedRow]
-			changeTheme(fileContent, newTheme)
-			applyChanges(*fileContent)
+			yamlconf.ChangeTheme(fileContent, newTheme)
+			yamlconf.ApplyChanges(*fileContent)
 
 			ui.Render(themesList)
 		}
@@ -66,7 +70,7 @@ func opacityAdjuster(fileContent *string) (*widgets.Gauge, func() string) {
 	opacityGauge := widgets.NewGauge()
 	opacityGauge.Title = "Opacity"
 	opacityGauge.SetRect(0, 8, 50, 11)
-	opacityGauge.Percent = int(currentOpacity(fileContent) * 100)
+	opacityGauge.Percent = int(yamlconf.CurrentOpacity(fileContent) * 100)
 	opacityGauge.BarColor = ui.ColorYellow
 	opacityGauge.LabelStyle = ui.NewStyle(ui.ColorBlue)
 	opacityGauge.BorderStyle.Fg = ui.ColorWhite
@@ -93,8 +97,8 @@ func opacityAdjuster(fileContent *string) (*widgets.Gauge, func() string) {
 			if tmp >= 0 && tmp <= 100 {
 				newOpacity = float64(tmp) / 100
 				opacityGauge.Percent = tmp
-				changeOpacity(fileContent, newOpacity)
-				applyChanges(*fileContent)
+				yamlconf.ChangeOpacity(fileContent, newOpacity)
+				yamlconf.ApplyChanges(*fileContent)
 				ui.Render(opacityGauge)
 			}
 		}
@@ -118,10 +122,10 @@ func fontSizeAdjuster(fileContent *string) (*widgets.List, func() string) {
 	fsList.SetRect(26, 0, 50, 8)
 	fsList.BorderStyle.Fg = ui.ColorWhite
 
-	currentFS := currentFontSize(fileContent)
+	currentFS := yamlconf.CurrentFontSize(fileContent)
 	for index, fontSize := range fsList.Rows {
 		fs, err := strconv.Atoi(fontSize)
-		must(err)
+		utils.Must(err)
 
 		if currentFS == fs {
 			fsList.SelectedRow = index
@@ -143,10 +147,10 @@ func fontSizeAdjuster(fileContent *string) (*widgets.List, func() string) {
 			}
 
 			newFS, err := strconv.Atoi(fsList.Rows[fsList.SelectedRow])
-			must(err)
+			utils.Must(err)
 
-			changeFontSize(fileContent, newFS)
-			applyChanges(*fileContent)
+			yamlconf.ChangeFontSize(fileContent, newFS)
+			yamlconf.ApplyChanges(*fileContent)
 
 			ui.Render(fsList)
 		}
@@ -155,7 +159,7 @@ func fontSizeAdjuster(fileContent *string) (*widgets.List, func() string) {
 	return fsList, setState
 }
 
-func widgetsController(fileContent *string) {
+func WidgetsController(fileContent *string) {
 	defer ui.Close()
 
 	themesList, setThemeState := themeShuffler(fileContent)

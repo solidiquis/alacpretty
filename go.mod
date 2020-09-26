@@ -1,4 +1,4 @@
-module github.com/solidiquis/alacritty
+module github.com/solidiquis/alacpretty
 
 go 1.13
 

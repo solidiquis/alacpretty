@@ -1,21 +1,21 @@
-package main
+package themes
 
-var allThemes = make(map[string]string)
+var AllThemes = make(map[string]string)
 
 func init() {
-	allThemes = map[string]string{
-		"After Glow":          afterGlow,
-		"Argonaut":            argonaut,
-		"Ayu Dark":            ayuDark,
-		"Ayu Mirage":          ayuMirage,
-		"Base16 Default Dark": base16DefaultDark,
-		"Blood Moon":          bloodMoon,
-		"Default Theme":       defaultTheme,
-		"Solarized Light":     solarizedLight,
+	AllThemes = map[string]string{
+		"After Glow":          AfterGlow,
+		"Argonaut":            Argonaut,
+		"Ayu Dark":            AyuDark,
+		"Ayu Mirage":          AyuMirage,
+		"Base16 Default Dark": Base16DefaultDark,
+		"Blood Moon":          BloodMoon,
+		"Default Theme":       DefaultTheme,
+		"Solarized Light":     SolarizedLight,
 	}
 }
 
-const afterGlow string = `
+const AfterGlow string = `
 colors:
 
   primary:
@@ -62,7 +62,7 @@ colors:
     white:   '#828282'
 `
 
-const argonaut string = `
+const Argonaut string = `
 colors:
 
   primary:
@@ -94,7 +94,7 @@ colors:
     white:   '#FEFEF8'
 `
 
-const ayuMirage string = `
+const AyuMirage string = `
 colors:
 
   primary:
@@ -122,7 +122,7 @@ colors:
     white: '#FFFFFF'
 `
 
-const base16DefaultDark string = `
+const Base16DefaultDark string = `
 colors:
 
   primary:
@@ -154,7 +154,7 @@ colors:
     white:   '#f8f8f8'
 `
 
-const bloodMoon string = `
+const BloodMoon string = `
 colors:
 
   primary:
@@ -182,7 +182,7 @@ colors:
     white:   '#FFFAFA'
 `
 
-const defaultTheme string = `
+const DefaultTheme string = `
 colors:
 
   primary:
@@ -220,7 +220,7 @@ colors:
     white:   '0xdddddd'
 `
 
-const solarizedLight string = `
+const SolarizedLight string = `
 colors:
 
   primary:
@@ -248,7 +248,7 @@ colors:
     white:   '#fdf6e3'
 `
 
-const ayuDark string = `
+const AyuDark string = `
 colors:
 
   primary:

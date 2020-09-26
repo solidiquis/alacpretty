@@ -1,9 +1,11 @@
-package main
+package yamlconf
 
 import (
 	"fmt"
 	"io/ioutil"
 	"os"
+
+	"github.com/solidiquis/alacpretty/internal/utils"
 )
 
 var alacrittyYamlPath string
@@ -14,7 +16,7 @@ func init() {
 
 func findAlacrittyYaml() {
 	homeDir, err := os.UserHomeDir()
-	must(err)
+	utils.Must(err)
 
 	// https://github.com/alacritty/alacritty
 	paths := []string{
@@ -33,12 +35,12 @@ func findAlacrittyYaml() {
 		}
 	}
 
-	must(err)
+	utils.Must(err)
 }
 
-func readFileToString() string {
+func ReadFileToString() string {
 	text, err := ioutil.ReadFile(alacrittyYamlPath)
-	must(err)
+	utils.Must(err)
 
 	return string(text)
 }

@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"io/ioutil"
@@ -6,29 +6,29 @@ import (
 	"path/filepath"
 )
 
-func tmpFile(fileContent, fileName string) (string, string) {
+func TmpFile(fileContent, fileName string) (string, string) {
 	content := []byte(fileContent)
 	dir, err := ioutil.TempDir("./", "tmp")
-	must(err)
+	Must(err)
 
 	tmpFilePath := filepath.Join(dir, fileName)
 	err = ioutil.WriteFile(tmpFilePath, content, 0666)
-	must(err)
+	Must(err)
 
 	return tmpFilePath, dir
 }
 
-func removeTmpDir(filePath string) {
+func RemoveTmpDir(filePath string) {
 	os.RemoveAll(filePath)
 }
 
-func readTmpToString(filePath string) string {
+func ReadTmpToString(filePath string) string {
 	text, err := ioutil.ReadFile(filePath)
-	must(err)
+	Must(err)
 
 	return string(text)
 }
 
-func endTest(code int) {
+func EndTest(code int) {
 	os.Exit(code)
 }
