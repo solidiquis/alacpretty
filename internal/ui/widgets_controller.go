@@ -20,6 +20,7 @@ func WidgetsController(fileContent *string) {
 	themesList, setThemeState := themeShuffler(fileContent)
 	opacityGauge, SetOpacityState := opacityAdjuster(fileContent)
 	fontSizeAdjuster, setFontSizeState := fontSizeAdjuster(fileContent)
+	fontShuffler, setFontState := fontShuffler(fileContent)
 
 	var currentWidget ui.Drawable = themesList // default widget
 	currentWidget.(*widgets.List).BorderStyle.Fg = ui.ColorYellow
@@ -28,6 +29,7 @@ func WidgetsController(fileContent *string) {
 		themesList,
 		opacityGauge,
 		fontSizeAdjuster,
+		fontShuffler,
 	)
 
 	rowOne := []ui.Drawable{
@@ -37,21 +39,25 @@ func WidgetsController(fileContent *string) {
 	rowTwo := []ui.Drawable{
 		opacityGauge,
 	}
+	rowThree := []ui.Drawable{
+		fontShuffler,
+	}
 	widgetGrid := [][]ui.Drawable{
 		rowOne,
 		rowTwo,
+		rowThree,
 	}
 
 	var activeRowIndex, activeColumnIndex int
 	var activeWidget ui.Drawable
 
-	e := setThemeState()
+	e := setThemeState() // default active widget
 
 	for {
 		switch e {
-		case "J":
-			activeRowIndex--
 		case "K":
+			activeRowIndex--
+		case "J":
 			activeRowIndex++
 		case "H":
 			activeColumnIndex--
@@ -101,12 +107,17 @@ func WidgetsController(fileContent *string) {
 				e = setThemeState()
 			case "Font Sizes":
 				e = setFontSizeState()
+			case "Font":
+				e = setFontState()
 			}
 		case *widgets.Gauge:
 			aw.BorderStyle.Fg = ui.ColorYellow
 			ui.Render(aw)
 			currentWidget = aw
-			e = SetOpacityState()
+			switch aw.Title {
+			case "Opacity":
+				e = SetOpacityState()
+			}
 		}
 	}
 }

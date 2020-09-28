@@ -2,6 +2,8 @@ package ui
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/solidiquis/alacpretty/internal/themes"
@@ -41,9 +43,9 @@ func themeShuffler(fileContent *string) (*widgets.List, func() string) {
 			switch e.ID {
 			case "<C-c>", "q", "H", "J", "K", "L":
 				return e.ID
-			case "j", "<Down>":
+			case "j":
 				themesList.ScrollDown()
-			case "k", "<Up>":
+			case "k":
 				themesList.ScrollUp()
 			}
 
@@ -149,4 +151,65 @@ func fontSizeAdjuster(fileContent *string) (*widgets.List, func() string) {
 	}
 
 	return fsList, setState
+}
+
+func fontShuffler(fileContent *string) (*widgets.List, func() string) {
+	rootFontsPath := "/System/Library/Fonts"
+	userHomeDir, err := os.UserHomeDir()
+	utils.Must(err)
+	userFontsPath := fmt.Sprintf("%s/Library/Fonts", userHomeDir)
+
+	allFonts := func(paths ...string) []string {
+		var fonts []string
+		for _, path := range paths {
+			err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+				if !info.IsDir() {
+					fonts = append(fonts, info.Name())
+				}
+				return nil
+			})
+			utils.Must(err)
+		}
+		return fonts
+	}(rootFontsPath, userFontsPath)
+
+	fontsList := widgets.NewList()
+	fontsList.Title = "Fonts"
+	fontsList.Rows = allFonts
+	fontsList.TextStyle = ui.NewStyle(ui.ColorYellow)
+	fontsList.WrapText = false
+	fontsList.SetRect(0, 11, 25, 25)
+	fontsList.BorderStyle.Fg = ui.ColorWhite
+
+	currentFont := yamlconf.CurrentFont(fileContent)
+	for index, font := range fontsList.Rows {
+		if currentFont == font {
+			fontsList.SelectedRow = index
+		}
+	}
+
+	setState := func() string {
+		uiEvents := ui.PollEvents()
+
+		for {
+			e := <-uiEvents
+			switch e.ID {
+			case "<C-c>", "q", "H", "J", "K", "L":
+				return e.ID
+			case "j":
+				fontsList.ScrollDown()
+			case "k":
+				fontsList.ScrollUp()
+			}
+
+			// changeFonts here
+
+			ui.Render(fontsList)
+		}
+	}
+
+	return fontsList, setState
 }

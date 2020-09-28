@@ -13,9 +13,10 @@ import (
 )
 
 const (
+	colorsRegex   = `\bcolors:.*(?:\n\s{2,}.+)+`
+	fontRegex     = `family:.*`
 	fontSizeRegex = `size:\s*\d+\.0`
 	opacityRegex  = `background_opacity:\s*\d+.\d+`
-	colorsRegex   = `\bcolors:.*(?:\n\s{2,}.+)+`
 )
 
 func CurrentTheme(fileContent *string) string {
@@ -58,6 +59,23 @@ func CurrentFontSize(fileContent *string) int {
 	fontSize, err := strconv.Atoi(matchString)
 	utils.Must(err)
 	return fontSize
+}
+
+func CurrentFont(fileContent *string) string {
+	regex, _ := regexp.Compile(fontRegex)
+	matchBytes := regex.FindAll([]byte(*fileContent), -1)
+
+	fontPattern := `\s+.*`
+	regex, _ = regexp.Compile(fontPattern)
+
+	var currentFont string
+	if len(matchBytes) > 0 {
+		currentFont = string(matchBytes[0])
+		currentFont = string(regex.Find([]byte(currentFont)))
+		currentFont = strings.Trim(currentFont, " ")
+	}
+
+	return currentFont
 }
 
 func ChangeFontSize(fileContent *string, fontSize int) {
