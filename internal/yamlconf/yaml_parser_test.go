@@ -1,7 +1,6 @@
 package yamlconf
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/solidiquis/alacpretty/internal/utils"
@@ -39,8 +38,25 @@ func TestCurrentFontSize(t *testing.T) {
 	}
 }
 
-func TestCurrenFont(t *testing.T) {
-	fmt.Println(CurrentFont(&content))
+func TestCurrentFont(t *testing.T) {
+	subject := CurrentFont
+	targetValue := "Fira Code"
+
+	result := subject(&content)
+	if result != targetValue {
+		t.Errorf("\nExpected result: %s\nActual result: %s", targetValue, result)
+	}
+}
+
+func TestChangeFont(t *testing.T) {
+	subject := ChangeFont
+	targetValue := "ArialHB"
+
+	subject(&content, targetValue)
+	result := CurrentFont(&content)
+	if result != targetValue {
+		t.Errorf("\nExpected result: %s\nActual result: %s", targetValue, result)
+	}
 }
 
 func TestMain(m *testing.M) {

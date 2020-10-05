@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/solidiquis/alacpretty/internal/themes"
 	"github.com/solidiquis/alacpretty/internal/utils"
@@ -167,7 +168,12 @@ func fontShuffler(fileContent *string) (*widgets.List, func() string) {
 					return err
 				}
 				if !info.IsDir() {
-					fonts = append(fonts, info.Name())
+					fontName := strings.Split(info.Name(), ".")[0]
+
+					// TODO: Figure out what to do with these.
+					if !strings.HasPrefix(fontName, "Apple") {
+						fonts = append(fonts, fontName)
+					}
 				}
 				return nil
 			})
@@ -185,6 +191,7 @@ func fontShuffler(fileContent *string) (*widgets.List, func() string) {
 	fontsList.BorderStyle.Fg = ui.ColorWhite
 
 	currentFont := yamlconf.CurrentFont(fileContent)
+
 	for index, font := range fontsList.Rows {
 		if currentFont == font {
 			fontsList.SelectedRow = index
@@ -205,7 +212,9 @@ func fontShuffler(fileContent *string) (*widgets.List, func() string) {
 				fontsList.ScrollUp()
 			}
 
-			// changeFonts here
+			newFont := fontsList.Rows[fontsList.SelectedRow]
+			yamlconf.ChangeFont(fileContent, newFont)
+			yamlconf.ApplyChanges(*fileContent)
 
 			ui.Render(fontsList)
 		}

@@ -78,7 +78,7 @@ func WidgetsController(fileContent *string) {
 		if activeColumnIndex < 0 {
 			absActiveColumnIndex := int(math.Abs(float64(activeColumnIndex)))
 			activeColumnIndex = len(activeRow) - absActiveColumnIndex
-		} else if activeColumnIndex > len(activeRow)-1 {
+		} else if activeColumnIndex > len(activeRow) {
 			activeColumnIndex = 0
 		}
 		activeColumn := activeRow[activeColumnIndex]
@@ -107,7 +107,7 @@ func WidgetsController(fileContent *string) {
 				e = setThemeState()
 			case "Font Sizes":
 				e = setFontSizeState()
-			case "Font":
+			case "Fonts":
 				e = setFontState()
 			}
 		case *widgets.Gauge:

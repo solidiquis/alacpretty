@@ -73,6 +73,7 @@ func CurrentFont(fileContent *string) string {
 		currentFont = string(matchBytes[0])
 		currentFont = string(regex.Find([]byte(currentFont)))
 		currentFont = strings.Trim(currentFont, " ")
+		currentFont = strings.Split(currentFont, ".")[0]
 	}
 
 	return currentFont
@@ -117,6 +118,13 @@ func ChangeTheme(fileContent *string, theme string) {
 
 	regex, _ := regexp.Compile(colorsRegex)
 	*fileContent = regex.ReplaceAllString(*fileContent, newTheme)
+}
+
+func ChangeFont(fileContent *string, font string) {
+	newFont := fmt.Sprintf("family: %s", font)
+	regex, _ := regexp.Compile(fontRegex)
+
+	*fileContent = regex.ReplaceAllString(*fileContent, newFont)
 }
 
 func ApplyChanges(newContent string) {
