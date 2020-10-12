@@ -2,7 +2,6 @@ package ui
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -11,6 +10,7 @@ import (
 	"github.com/solidiquis/alacpretty/internal/utils"
 	"github.com/solidiquis/alacpretty/internal/yamlconf"
 
+	"github.com/flopp/go-findfont"
 	ui "github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
 )
@@ -155,39 +155,18 @@ func fontSizeAdjuster(fileContent *string) (*widgets.List, func() string) {
 }
 
 func fontShuffler(fileContent *string) (*widgets.List, func() string) {
-	rootFontsPath := "/System/Library/Fonts"
-	userHomeDir, err := os.UserHomeDir()
-	utils.Must(err)
-	userFontsPath := fmt.Sprintf("%s/Library/Fonts", userHomeDir)
-
-	allFonts := func(paths ...string) []string {
-		var fonts []string
-		for _, path := range paths {
-			err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
-				if err != nil {
-					return err
-				}
-				if !info.IsDir() {
-					fontName := strings.Split(info.Name(), ".")[0]
-
-					// TODO: Figure out what to do with these.
-					if !strings.HasPrefix(fontName, "Apple") {
-						fonts = append(fonts, fontName)
-					}
-				}
-				return nil
-			})
-			utils.Must(err)
-		}
-		return fonts
-	}(rootFontsPath, userFontsPath)
-
+	allFonts := findfont.List()
+	for i, fontPath := range allFonts {
+		font := strings.TrimSuffix(fontPath, filepath.Ext(fontPath))
+		tmp := strings.Split(font, "/Fonts/")
+		allFonts[i] = tmp[len(tmp)-1]
+	}
 	fontsList := widgets.NewList()
 	fontsList.Title = "Fonts"
 	fontsList.Rows = allFonts
 	fontsList.TextStyle = ui.NewStyle(ui.ColorYellow)
 	fontsList.WrapText = false
-	fontsList.SetRect(0, 11, 25, 25)
+	fontsList.SetRect(0, 11, 50, 25)
 	fontsList.BorderStyle.Fg = ui.ColorWhite
 
 	currentFont := yamlconf.CurrentFont(fileContent)

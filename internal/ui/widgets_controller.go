@@ -78,7 +78,7 @@ func WidgetsController(fileContent *string) {
 		if activeColumnIndex < 0 {
 			absActiveColumnIndex := int(math.Abs(float64(activeColumnIndex)))
 			activeColumnIndex = len(activeRow) - absActiveColumnIndex
-		} else if activeColumnIndex > len(activeRow) {
+		} else if activeColumnIndex >= len(activeRow) {
 			activeColumnIndex = 0
 		}
 		activeColumn := activeRow[activeColumnIndex]

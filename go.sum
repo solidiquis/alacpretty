@@ -1,3 +1,5 @@
+github.com/flopp/go-findfont v0.0.0-20200805110358-089b91d05de8 h1:yE1LI8kXtLnuG6y0d6v8d+JMIOytrjubPwEew3LbWjc=
+github.com/flopp/go-findfont v0.0.0-20200805110358-089b91d05de8/go.mod h1:wKKxRDjD024Rh7VMwoU90i6ikQRCr+JTHB5n4Ejkqvw=
 github.com/gizak/termui v3.1.0+incompatible h1:N3CFm+j087lanTxPpHOmQs0uS3s5I9TxoAFy6DqPqv8=
 github.com/gizak/termui/v3 v3.1.0 h1:ZZmVDgwHl7gR7elfKf1xc4IudXZ5qqfDh4wExk4Iajc=
 github.com/gizak/termui/v3 v3.1.0/go.mod h1:bXQEBkJpzxUAKf0+xq9MSWAvWZlE7c+aidmyFlkYTrY=
