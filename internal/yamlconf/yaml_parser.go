@@ -108,6 +108,28 @@ func ChangeTheme(fileContent *string, theme string) {
 			return themes.Base16DefaultDark
 		case "blood_moon", "Blood Moon":
 			return themes.BloodMoon
+		case "breeze", "Breeze":
+			return themes.Breeze
+		case "campbell", "Campbell":
+			return themes.Campbell
+		case "challenger_deep", "Challenger Deep":
+			return themes.ChallengerDeep
+		case "cobalt_2", "Cobalt2":
+			return themes.Cobalt2
+		case "cyber_punk_neon", "Cyber Punk Neon":
+			return themes.CyberPunkNeon
+		case "darcula", "Darcula":
+			return themes.Darcula
+		case "doom_one", "Doom One":
+			return themes.DoomOne
+		case "dracula", "Dracula":
+			return themes.Dracula
+		case "falcon", "Falcon":
+			return themes.Falcon
+		case "flat_remix", "Flat Remix":
+			return themes.FlatRemix
+		case "gotham", "Gotham":
+			return themes.Gotham
 		case "solarized_light", "Solarized Light":
 			return themes.SolarizedLight
 		default:

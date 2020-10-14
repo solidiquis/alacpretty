@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -20,6 +21,7 @@ func themeShuffler(fileContent *string) (*widgets.List, func() string) {
 	for theme := range themes.AllThemes {
 		rows = append(rows, theme)
 	}
+	sort.Strings(rows)
 
 	themesList := widgets.NewList()
 	themesList.Title = "Themes"
