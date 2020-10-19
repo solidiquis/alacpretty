@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"syscall"
 
 	"github.com/solidiquis/alacpretty/internal/themes"
 	"github.com/solidiquis/alacpretty/internal/utils"
@@ -14,9 +15,71 @@ import (
 	"github.com/flopp/go-findfont"
 	ui "github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
+
+	"golang.org/x/sys/unix"
 )
 
+const (
+	columnOneStart = 0
+	columnOneEnd   = 40
+)
+
+var (
+	termWidth  int
+	termHeight int
+)
+
+func init() {
+	ws, err := unix.IoctlGetWinsize(syscall.Stdout, unix.TIOCGWINSZ)
+	utils.Must(err)
+
+	termWidth = int(ws.Col)
+	termHeight = int(ws.Row)
+}
+
+func themeSearchbox() (*widgets.Paragraph, func() string) {
+	var x1, x2, y1, y2 int = columnOneStart, columnOneEnd, 0, 3
+
+	searchbox := widgets.NewParagraph()
+	searchbox.Title = "Search Theme"
+	searchbox.Text = " "
+	searchbox.SetRect(x1, y1, x2, y2)
+	searchbox.BorderStyle.Fg = ui.ColorWhite
+
+	processKey := func(eventID string) string {
+		switch eventID {
+		case "<Space>":
+			return ""
+		default:
+			return eventID
+		}
+	}
+
+	setState := func() string {
+		uiEvents := ui.PollEvents()
+
+		for {
+			e := <-uiEvents
+			switch e.ID {
+			case "<C-c>", "q", "H", "J", "K", "L":
+				return e.ID
+			case "<Backspace>":
+				if len(searchbox.Text) == 0 {
+					continue
+				}
+				searchbox.Text = string([]byte(searchbox.Text)[:len(searchbox.Text)-1])
+			default:
+				searchbox.Text = searchbox.Text + processKey(e.ID)
+			}
+			ui.Render(searchbox)
+		}
+	}
+	return searchbox, setState
+}
+
 func themeShuffler(fileContent *string) (*widgets.List, func() string) {
+	var x1, x2, y1, y2 int = columnOneStart, columnOneEnd, 4, 15
+
 	var rows []string
 	for theme := range themes.AllThemes {
 		rows = append(rows, theme)
@@ -28,7 +91,7 @@ func themeShuffler(fileContent *string) (*widgets.List, func() string) {
 	themesList.Rows = rows
 	themesList.TextStyle = ui.NewStyle(ui.ColorYellow)
 	themesList.WrapText = false
-	themesList.SetRect(0, 0, 25, 8)
+	themesList.SetRect(x1, y1, x2, y2)
 	themesList.BorderStyle.Fg = ui.ColorWhite
 
 	currentTheme := yamlconf.CurrentTheme(fileContent)
@@ -59,14 +122,15 @@ func themeShuffler(fileContent *string) (*widgets.List, func() string) {
 			ui.Render(themesList)
 		}
 	}
-
 	return themesList, setState
 }
 
 func opacityAdjuster(fileContent *string) (*widgets.Gauge, func() string) {
+	var x1, x2, y1, y2 int = columnOneEnd + 1, termWidth, 0, 3
+
 	opacityGauge := widgets.NewGauge()
 	opacityGauge.Title = "Opacity"
-	opacityGauge.SetRect(0, 8, 50, 11)
+	opacityGauge.SetRect(x1, y1, x2, y2)
 	opacityGauge.Percent = int(yamlconf.CurrentOpacity(fileContent) * 100)
 	opacityGauge.BarColor = ui.ColorYellow
 	opacityGauge.LabelStyle = ui.NewStyle(ui.ColorBlue)
@@ -100,11 +164,12 @@ func opacityAdjuster(fileContent *string) (*widgets.Gauge, func() string) {
 			}
 		}
 	}
-
 	return opacityGauge, setState
 }
 
 func fontSizeAdjuster(fileContent *string) (*widgets.List, func() string) {
+	var x1, x2, y1, y2 int = 31, 40, 20, 31
+
 	rows := make([]string, 27)
 
 	for i := 6; i < 33; i++ {
@@ -112,11 +177,11 @@ func fontSizeAdjuster(fileContent *string) (*widgets.List, func() string) {
 	}
 
 	fsList := widgets.NewList()
-	fsList.Title = "Font Sizes"
+	fsList.Title = "Size"
 	fsList.Rows = rows
 	fsList.TextStyle = ui.NewStyle(ui.ColorYellow)
 	fsList.WrapText = false
-	fsList.SetRect(26, 0, 50, 8)
+	fsList.SetRect(x1, y1, x2, y2)
 	fsList.BorderStyle.Fg = ui.ColorWhite
 
 	currentFS := yamlconf.CurrentFontSize(fileContent)
@@ -152,11 +217,52 @@ func fontSizeAdjuster(fileContent *string) (*widgets.List, func() string) {
 			ui.Render(fsList)
 		}
 	}
-
 	return fsList, setState
 }
 
+func fontSearchbox() (*widgets.Paragraph, func() string) {
+	var x1, x2, y1, y2 int = columnOneStart, columnOneEnd, 16, 19
+
+	searchbox := widgets.NewParagraph()
+	searchbox.Title = "Search Font"
+	searchbox.Text = " "
+	searchbox.SetRect(x1, y1, x2, y2)
+	searchbox.BorderStyle.Fg = ui.ColorWhite
+
+	processKey := func(eventID string) string {
+		switch eventID {
+		case "<Space>":
+			return ""
+		default:
+			return eventID
+		}
+	}
+
+	setState := func() string {
+		uiEvents := ui.PollEvents()
+
+		for {
+			e := <-uiEvents
+			switch e.ID {
+			case "<C-c>", "q", "H", "J", "K", "L":
+				return e.ID
+			case "<Backspace>":
+				if len(searchbox.Text) == 0 {
+					continue
+				}
+				searchbox.Text = string([]byte(searchbox.Text)[:len(searchbox.Text)-1])
+			default:
+				searchbox.Text = searchbox.Text + processKey(e.ID)
+			}
+			ui.Render(searchbox)
+		}
+	}
+	return searchbox, setState
+}
+
 func fontShuffler(fileContent *string) (*widgets.List, func() string) {
+	var x1, x2, y1, y2 int = columnOneStart, 30, 20, 31
+
 	allFonts := findfont.List()
 	for i, fontPath := range allFonts {
 		font := strings.TrimSuffix(fontPath, filepath.Ext(fontPath))
@@ -168,7 +274,7 @@ func fontShuffler(fileContent *string) (*widgets.List, func() string) {
 	fontsList.Rows = allFonts
 	fontsList.TextStyle = ui.NewStyle(ui.ColorYellow)
 	fontsList.WrapText = false
-	fontsList.SetRect(0, 11, 50, 25)
+	fontsList.SetRect(x1, y1, x2, y2)
 	fontsList.BorderStyle.Fg = ui.ColorWhite
 
 	currentFont := yamlconf.CurrentFont(fileContent)
@@ -200,6 +306,47 @@ func fontShuffler(fileContent *string) (*widgets.List, func() string) {
 			ui.Render(fontsList)
 		}
 	}
-
 	return fontsList, setState
+}
+
+func showYaml() (*widgets.Paragraph, chan string, func()) {
+	var x1, x2, y1, y2 int = columnOneEnd + 1, termWidth, 4, termHeight
+
+	box := widgets.NewParagraph()
+	box.Title = "alacritty.yml"
+	box.SetRect(x1, y1, x2, y2)
+	box.BorderStyle.Fg = ui.ColorWhite
+
+	ch := make(chan string, 1)
+
+	// Use in goroutine
+	// TODO: Make idempotent
+	setState := func() {
+		for {
+			text := yamlconf.ReadFileToString()
+			switch <-ch {
+			case "Themes", "Search Theme":
+				box.Text = yamlconf.TrimYamlPrefix(text, "theme")
+			case "Fonts", "Search Font", "Size":
+				box.Text = yamlconf.TrimYamlPrefix(text, "font")
+			case "Opacity":
+				box.Text = yamlconf.TrimYamlPrefix(text, "opacity")
+			default:
+				box.Text = ""
+			}
+			ui.Render(box)
+		}
+	}
+	return box, ch, setState
+}
+
+func helpBox() *widgets.Paragraph {
+	var x1, x2, y1, y2 int = columnOneStart, columnOneEnd, 32, termHeight
+
+	box := widgets.NewParagraph()
+	box.Title = "Help"
+	box.Text = ""
+	box.SetRect(x1, y1, x2, y2)
+	box.BorderStyle.Fg = ui.ColorWhite
+	return box
 }

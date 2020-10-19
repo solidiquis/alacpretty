@@ -18,40 +18,64 @@ func WidgetsController(fileContent *string) {
 	defer ui.Close()
 
 	themesList, setThemeState := themeShuffler(fileContent)
-	opacityGauge, SetOpacityState := opacityAdjuster(fileContent)
+	opacityGauge, setOpacityState := opacityAdjuster(fileContent)
 	fontSizeAdjuster, setFontSizeState := fontSizeAdjuster(fileContent)
 	fontShuffler, setFontState := fontShuffler(fileContent)
+	themeSearch, setThemeSearchState := themeSearchbox()
+	fontSearch, setFontSearchState := fontSearchbox()
 
-	var currentWidget ui.Drawable = themesList // default widget
-	currentWidget.(*widgets.List).BorderStyle.Fg = ui.ColorYellow
+	help := helpBox()
+	yaml, yamlChan, setYamlBoxState := showYaml()
+	defer close(yamlChan)
+
+	// background
+	go setYamlBoxState()
+
+	// default widget
+	var currentWidget ui.Drawable = themeSearch
+	currentWidget.(*widgets.Paragraph).BorderStyle.Fg = ui.ColorYellow
+	yamlChan <- currentWidget.(*widgets.Paragraph).Title
 
 	ui.Render(
+		themeSearch,
 		themesList,
 		opacityGauge,
 		fontSizeAdjuster,
 		fontShuffler,
+		fontSearch,
+		yaml,
+		help,
 	)
 
 	rowOne := []ui.Drawable{
-		themesList,
-		fontSizeAdjuster,
-	}
-	rowTwo := []ui.Drawable{
+		themeSearch,
 		opacityGauge,
 	}
+	rowTwo := []ui.Drawable{
+		themesList,
+	}
 	rowThree := []ui.Drawable{
+		fontSearch,
+	}
+	rowFour := []ui.Drawable{
 		fontShuffler,
+		fontSizeAdjuster,
+	}
+	rowFive := []ui.Drawable{
+		help,
 	}
 	widgetGrid := [][]ui.Drawable{
 		rowOne,
 		rowTwo,
 		rowThree,
+		rowFour,
+		rowFive,
 	}
 
 	var activeRowIndex, activeColumnIndex int
 	var activeWidget ui.Drawable
 
-	e := setThemeState() // default active widget
+	e := setThemeSearchState() // default active widget
 
 	for {
 		switch e {
@@ -87,6 +111,7 @@ func WidgetsController(fileContent *string) {
 
 		// yellow = active widget
 		// white = inactive widget
+		// Deactivate current widget
 		switch cw := currentWidget.(type) {
 		case *widgets.List:
 			cw.BorderStyle.Fg = ui.ColorWhite
@@ -94,18 +119,23 @@ func WidgetsController(fileContent *string) {
 		case *widgets.Gauge:
 			cw.BorderStyle.Fg = ui.ColorWhite
 			ui.Render(cw)
+		case *widgets.Paragraph:
+			cw.BorderStyle.Fg = ui.ColorWhite
+			ui.Render(cw)
 		}
 
+		// Set new active widget
 		switch aw := activeWidget.(type) {
 		case *widgets.List:
 			aw.BorderStyle.Fg = ui.ColorYellow
 			ui.Render(aw)
 			currentWidget = aw
+			yamlChan <- aw.Title
 
 			switch aw.Title {
 			case "Themes":
 				e = setThemeState()
-			case "Font Sizes":
+			case "Size":
 				e = setFontSizeState()
 			case "Fonts":
 				e = setFontState()
@@ -114,9 +144,23 @@ func WidgetsController(fileContent *string) {
 			aw.BorderStyle.Fg = ui.ColorYellow
 			ui.Render(aw)
 			currentWidget = aw
+			yamlChan <- aw.Title
+
 			switch aw.Title {
 			case "Opacity":
-				e = SetOpacityState()
+				e = setOpacityState()
+			}
+		case *widgets.Paragraph:
+			aw.BorderStyle.Fg = ui.ColorYellow
+			ui.Render(aw)
+			currentWidget = aw
+			yamlChan <- aw.Title
+
+			switch aw.Title {
+			case "Search Theme":
+				e = setThemeSearchState()
+			case "Search Font":
+				e = setFontSearchState()
 			}
 		}
 	}

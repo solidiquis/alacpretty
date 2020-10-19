@@ -59,6 +59,12 @@ func TestChangeFont(t *testing.T) {
 	}
 }
 
+// TODO
+//func TestTrimYamlPrefix(t *testing.T) {
+//subject := TrimYamlPrefix
+//subject(content)
+//}
+
 func TestMain(m *testing.M) {
 	tmp, dir := utils.TmpFile(utils.ExampleYaml, "tmp.yml")
 	content = utils.ReadTmpToString(tmp)

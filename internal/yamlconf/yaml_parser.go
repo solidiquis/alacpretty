@@ -149,6 +149,23 @@ func ChangeFont(fileContent *string, font string) {
 	*fileContent = regex.ReplaceAllString(*fileContent, newFont)
 }
 
+// Intentionally not a pointer to a string
+func TrimYamlPrefix(fileContent, splicePoint string) string {
+	var patternToTrim string
+	switch splicePoint {
+	case "theme":
+		patternToTrim = `\bcolors:(?:.*\n)+`
+	case "font":
+		patternToTrim = `font:(?:.*\n)+`
+	case "opacity":
+		patternToTrim = `background_opacity:(?:.*\n)+`
+	}
+	regex, _ := regexp.Compile(patternToTrim)
+	matchBytes := regex.Find([]byte(fileContent))
+
+	return string(matchBytes)
+}
+
 func ApplyChanges(newContent string) {
 	err := os.Truncate(alacrittyYamlPath, 0)
 	utils.Must(err)
