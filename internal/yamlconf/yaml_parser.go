@@ -15,8 +15,8 @@ import (
 const (
 	colorsRegex   = `\bcolors:.*(?:\n\s{2,}.+)+`
 	fontRegex     = `family:.*`
-	fontSizeRegex = `size:\s*\d+\.0`
-	opacityRegex  = `background_opacity:\s*\d+.\d+`
+	fontSizeRegex = `size:\s*\d+\.\d+`
+	opacityRegex  = `background_opacity:\s*\d+\.\d+`
 )
 
 func CurrentTheme(fileContent *string) string {
