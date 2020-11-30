@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -15,6 +16,7 @@ import (
 	"github.com/flopp/go-findfont"
 	ui "github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
+	"github.com/sahilm/fuzzy"
 
 	"golang.org/x/sys/unix"
 )
@@ -37,7 +39,7 @@ func init() {
 	termHeight = int(ws.Row)
 }
 
-func themeSearchbox() (*widgets.Paragraph, func() string) {
+func themeSearchbox(themeShufflerWidget *widgets.List) (*widgets.Paragraph, func() string) {
 	var x1, x2, y1, y2 int = columnOneStart, columnOneEnd, 0, 3
 
 	searchbox := widgets.NewParagraph()
@@ -55,23 +57,41 @@ func themeSearchbox() (*widgets.Paragraph, func() string) {
 		}
 	}
 
+	alphanumericRe := regexp.Compile("^[a-zA-Z0-9]*$")
+
 	setState := func() string {
 		uiEvents := ui.PollEvents()
 
 		for {
 			e := <-uiEvents
-			switch e.ID {
-			case "<C-c>", "q", "H", "J", "K", "L":
-				return e.ID
-			case "<Backspace>":
+
+			// Allow only alphanumeric characters
+			if alphanumericRe.Match([]byte(e.ID)) {
+				switch e.ID {
+				case "<C-c>", "q", "H", "J", "K", "L":
+					return e.ID
+				case "<Backspace>":
+					searchbox.Text = string([]byte(searchbox.Text)[:len(searchbox.Text)-1])
+				default:
+					searchbox.Text = searchbox.Text + processKey(e.ID)
+				}
+
 				if len(searchbox.Text) == 0 {
+					themeShufflerWidget.Rows = themes.ThemesList
+					ui.Render(searchbox, themeShufflerWidget)
 					continue
 				}
-				searchbox.Text = string([]byte(searchbox.Text)[:len(searchbox.Text)-1])
-			default:
-				searchbox.Text = searchbox.Text + processKey(e.ID)
+
+				matches := fuzzy.Find(searchbox.Text, themes.ThemesList)
+				themes := make([]string, len(matches))
+				for i := 0; i < len(themes); i++ {
+					themes[i] = matches[i].Str
+				}
+
+				themeShufflerWidget.Rows = themes
+				ui.Render(searchbox, themeShufflerWidget)
 			}
-			ui.Render(searchbox)
+
 		}
 	}
 	return searchbox, setState
