@@ -21,7 +21,7 @@ func WidgetsController(fileContent *string) {
 	opacityGauge, setOpacityState := opacityAdjuster(fileContent)
 	fontSizeAdjuster, setFontSizeState := fontSizeAdjuster(fileContent)
 	fontShuffler, setFontState := fontShuffler(fileContent)
-	themeSearch, setThemeSearchState := themeSearchbox()
+	themeSearch, setThemeSearchState := themeSearchbox(themesList)
 	fontSearch, setFontSearchState := fontSearchbox()
 
 	help := helpBox()
