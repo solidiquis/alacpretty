@@ -5,7 +5,6 @@ import (
 	"math"
 
 	ui "github.com/gizak/termui/v3"
-	"github.com/gizak/termui/v3/widgets"
 )
 
 func init() {
@@ -14,69 +13,36 @@ func init() {
 	}
 }
 
-func WidgetsController(fileContent *string) {
+func WidgetsController(fileContent *string, rows ...[]UIWidget) {
 	defer ui.Close()
 
-	themesList, setThemeState := themeShuffler(fileContent)
-	opacityGauge, setOpacityState := opacityAdjuster(fileContent)
-	fontSizeAdjuster, setFontSizeState := fontSizeAdjuster(fileContent)
-	fontShuffler, setFontState := fontShuffler(fileContent)
-	themeSearch, setThemeSearchState := themeSearchbox()
-	fontSearch, setFontSearchState := fontSearchbox()
-
-	help := helpBox()
-	yaml, yamlChan, setYamlBoxState := showYaml()
-	defer close(yamlChan)
-
-	// background
-	go setYamlBoxState()
-
-	// default widget
-	var currentWidget ui.Drawable = themeSearch
-	currentWidget.(*widgets.Paragraph).BorderStyle.Fg = ui.ColorYellow
-	yamlChan <- currentWidget.(*widgets.Paragraph).Title
-
-	ui.Render(
-		themeSearch,
-		themesList,
-		opacityGauge,
-		fontSizeAdjuster,
-		fontShuffler,
-		fontSearch,
-		yaml,
-		help,
-	)
-
-	rowOne := []ui.Drawable{
-		themeSearch,
-		opacityGauge,
-	}
-	rowTwo := []ui.Drawable{
-		themesList,
-	}
-	rowThree := []ui.Drawable{
-		fontSearch,
-	}
-	rowFour := []ui.Drawable{
-		fontShuffler,
-		fontSizeAdjuster,
-	}
-	rowFive := []ui.Drawable{
-		help,
-	}
-	widgetGrid := [][]ui.Drawable{
-		rowOne,
-		rowTwo,
-		rowThree,
-		rowFour,
-		rowFive,
+	numWidgets := 0
+	for _, row := range rows {
+		numWidgets += len(row)
 	}
 
-	var activeRowIndex, activeColumnIndex int
-	var activeWidget ui.Drawable
+	widgets := make([]UIWidget, numWidgets)
+	drawables := make([]ui.Drawable, numWidgets) // underlying termui drawables
 
-	e := setThemeSearchState() // default active widget
+	i := 0
+	for _, row := range rows {
+		for _, widget := range row {
+			widget.InitWidget(fileContent)
+			drawables[i] = widget.GetWidget()
+			widgets[i] = widget
+			i++
+		}
+	}
 
+	ui.Render(drawables...)
+
+	// First widget -> default widget
+	activeWidget := widgets[0]
+	activeWidget.ToggleActive()
+
+	activeRowIndex, activeColumnIndex := 0, 0
+
+	e := activeWidget.SetState()
 	for {
 		switch e {
 		case "K":
@@ -91,13 +57,16 @@ func WidgetsController(fileContent *string) {
 			return
 		}
 
+		// Deactivate current active widget
+		activeWidget.ToggleActive()
+
 		if activeRowIndex < 0 {
 			absActiveRowIndex := int(math.Abs(float64(activeRowIndex)))
-			activeRowIndex = len(widgetGrid) - absActiveRowIndex
-		} else if activeRowIndex > len(widgetGrid)-1 {
+			activeRowIndex = len(rows) - absActiveRowIndex
+		} else if activeRowIndex > len(rows)-1 {
 			activeRowIndex = 0
 		}
-		activeRow := widgetGrid[activeRowIndex]
+		activeRow := rows[activeRowIndex]
 
 		if activeColumnIndex < 0 {
 			absActiveColumnIndex := int(math.Abs(float64(activeColumnIndex)))
@@ -107,61 +76,10 @@ func WidgetsController(fileContent *string) {
 		}
 		activeColumn := activeRow[activeColumnIndex]
 
-		activeWidget = activeColumn
-
-		// yellow = active widget
-		// white = inactive widget
-		// Deactivate current widget
-		switch cw := currentWidget.(type) {
-		case *widgets.List:
-			cw.BorderStyle.Fg = ui.ColorWhite
-			ui.Render(cw)
-		case *widgets.Gauge:
-			cw.BorderStyle.Fg = ui.ColorWhite
-			ui.Render(cw)
-		case *widgets.Paragraph:
-			cw.BorderStyle.Fg = ui.ColorWhite
-			ui.Render(cw)
-		}
-
 		// Set new active widget
-		switch aw := activeWidget.(type) {
-		case *widgets.List:
-			aw.BorderStyle.Fg = ui.ColorYellow
-			ui.Render(aw)
-			currentWidget = aw
-			yamlChan <- aw.Title
+		activeWidget = activeColumn
+		activeWidget.ToggleActive()
 
-			switch aw.Title {
-			case "Themes":
-				e = setThemeState()
-			case "Size":
-				e = setFontSizeState()
-			case "Fonts":
-				e = setFontState()
-			}
-		case *widgets.Gauge:
-			aw.BorderStyle.Fg = ui.ColorYellow
-			ui.Render(aw)
-			currentWidget = aw
-			yamlChan <- aw.Title
-
-			switch aw.Title {
-			case "Opacity":
-				e = setOpacityState()
-			}
-		case *widgets.Paragraph:
-			aw.BorderStyle.Fg = ui.ColorYellow
-			ui.Render(aw)
-			currentWidget = aw
-			yamlChan <- aw.Title
-
-			switch aw.Title {
-			case "Search Theme":
-				e = setThemeSearchState()
-			case "Search Font":
-				e = setFontSearchState()
-			}
-		}
+		e = activeWidget.SetState()
 	}
 }

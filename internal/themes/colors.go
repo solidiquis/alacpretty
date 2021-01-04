@@ -1,6 +1,7 @@
 package themes
 
 var AllThemes = make(map[string]string)
+var ThemeNames []string
 
 func init() {
 	AllThemes = map[string]string{
@@ -23,6 +24,10 @@ func init() {
 		"Flat Remix":          FlatRemix,
 		"Gotham":              Gotham,
 		"Solarized Light":     SolarizedLight,
+	}
+
+	for k, _ := range AllThemes {
+		ThemeNames = append(ThemeNames, k)
 	}
 }
 
