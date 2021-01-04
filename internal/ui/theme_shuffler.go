@@ -11,7 +11,7 @@ import (
 )
 
 type ThemeShuffler struct {
-	// Public
+	// public
 	Widget *widgets.List
 
 	// private
@@ -37,17 +37,19 @@ func (ts *ThemeShuffler) GetWidget() ui.Drawable {
 func (ts *ThemeShuffler) InitWidget(fileContent *string) {
 	ts.yamlConfig = fileContent
 
-	currentTheme := yamlconf.CurrentTheme(fileContent)
 	rows := make([]string, len(themes.ThemeNames))
-
-	var selectedRow int
 	for i, theme := range themes.ThemeNames {
 		rows[i] = theme
-		if currentTheme == theme {
+	}
+	sort.Strings(rows)
+
+	var selectedRow int
+	currentTheme := yamlconf.CurrentTheme(fileContent)
+	for i, theme := range rows {
+		if theme == currentTheme {
 			selectedRow = i
 		}
 	}
-	sort.Strings(rows)
 
 	ts.Widget.Title = "Themes"
 	ts.Widget.Rows = rows
@@ -65,9 +67,9 @@ func (ts *ThemeShuffler) SetState() string {
 		switch e.ID {
 		case "<C-c>", "q", "H", "J", "K", "L":
 			return e.ID
-		case "j", "down":
+		case "j", "<Down>":
 			ts.Widget.ScrollDown()
-		case "k", "up":
+		case "k", "<Up>":
 			ts.Widget.ScrollUp()
 		}
 
@@ -75,6 +77,6 @@ func (ts *ThemeShuffler) SetState() string {
 		yamlconf.ChangeTheme(ts.yamlConfig, newTheme)
 		yamlconf.ApplyChanges(*(ts.yamlConfig))
 
-		ui.Render(ts.GetWidget())
+		ui.Render(ts.Widget)
 	}
 }

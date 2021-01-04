@@ -33,6 +33,7 @@ func WidgetsControllerV1(fileContent *string, widgets ...UIWidget) {
 		default:
 			break
 		}
+		break
 	}
 }
 
