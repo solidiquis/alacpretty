@@ -5,7 +5,8 @@ import (
 )
 
 type UIWidget interface {
+	GetWidget() ui.Drawable
 	InitWidget(*string)
 	SetState() string
-	GetWidget() ui.Drawable
+	ToggleActive()
 }

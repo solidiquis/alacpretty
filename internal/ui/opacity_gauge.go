@@ -31,6 +31,15 @@ func (og *OpacityGauge) GetWidget() ui.Drawable {
 	return widget
 }
 
+func (og *OpacityGauge) ToggleActive() {
+	if fgColor := og.Widget.BorderStyle.Fg; fgColor == ui.ColorYellow {
+		og.Widget.BorderStyle.Fg = ui.ColorWhite
+	} else {
+		og.Widget.BorderStyle.Fg = ui.ColorYellow
+	}
+	ui.Render(og.Widget)
+}
+
 func (og *OpacityGauge) InitWidget(fileContent *string) {
 	og.yamlConfig = fileContent
 

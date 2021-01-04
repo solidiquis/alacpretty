@@ -1,3 +1,9 @@
+/*
+NOTE:
+Widgets currently being refactored into their own files.
+This file is soon to be deleted
+*/
+
 package ui
 
 import (

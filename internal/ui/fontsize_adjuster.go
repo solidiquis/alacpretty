@@ -34,6 +34,15 @@ func (fa *FontsizeAdjuster) GetWidget() ui.Drawable {
 	return widget
 }
 
+func (fa *FontsizeAdjuster) ToggleActive() {
+	if fgColor := fa.Widget.BorderStyle.Fg; fgColor == ui.ColorYellow {
+		fa.Widget.BorderStyle.Fg = ui.ColorWhite
+	} else {
+		fa.Widget.BorderStyle.Fg = ui.ColorYellow
+	}
+	ui.Render(fa.Widget)
+}
+
 func (fa *FontsizeAdjuster) InitWidget(fileContent *string) {
 	fa.yamlConfig = fileContent
 

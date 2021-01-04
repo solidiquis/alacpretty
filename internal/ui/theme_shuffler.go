@@ -34,6 +34,15 @@ func (ts *ThemeShuffler) GetWidget() ui.Drawable {
 	return widget
 }
 
+func (ts *ThemeShuffler) ToggleActive() {
+	if fgColor := ts.Widget.BorderStyle.Fg; fgColor == ui.ColorYellow {
+		ts.Widget.BorderStyle.Fg = ui.ColorWhite
+	} else {
+		ts.Widget.BorderStyle.Fg = ui.ColorYellow
+	}
+	ui.Render(ts.Widget)
+}
+
 func (ts *ThemeShuffler) InitWidget(fileContent *string) {
 	ts.yamlConfig = fileContent
 
