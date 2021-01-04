@@ -22,7 +22,8 @@ func main() {
   // Reads the contents of alacritty.yml to a string
   content := yamlconf.ReadFileToString()
   
-  // Set the position of each widget, and arrange in rows
+  // Set the position of each widget, and arrange in however
+  // many rows you need.
   row1 := []aui.UIWidget{
     aui.NewThemeShuffler(0, 0, 25, 10),
     aui.NewFontsizeAdjuster(26, 0, 51, 10),
