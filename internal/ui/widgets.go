@@ -77,7 +77,7 @@ func themeSearchbox() (*widgets.Paragraph, func() string) {
 	return searchbox, setState
 }
 
-func themeShuffler(fileContent *string) (*widgets.List, func() string) {
+func ThemeShufflerDeprecated(fileContent *string) (*widgets.List, func() string) {
 	var x1, x2, y1, y2 int = columnOneStart, columnOneEnd, 4, 15
 
 	var rows []string
