@@ -8,7 +8,7 @@
 
 ## How it works
 
-Alacpretty components are ready to plug into your Alacritty configurations. Assuming your `alacritty.yml` file is in the appropriate location as specified in the <a href="https://github.com/alacritty/alacritty">Alacritty documentation</a>, all you'll need to do is grab the components you need from `internal/ui`, and drop them into `WidgetsController` like it is done in `cmd/alacpretty/main.go`.
+Alacpretty components are ready to plug into your Alacritty configurations. Assuming your `alacritty.yml` file is in the appropriate location as specified in the <a href="https://github.com/alacritty/alacritty">Alacritty documentation</a>, all you'll need to do is grab the components you need from `internal/ui`, and drop them into <a href="https://github.com/solidiquis/alacpretty/blob/master/internal/ui/widgets_controller.go">WidgetsController</a> like it is done in `cmd/alacpretty/main.go`.
 
 ```go
 package main
