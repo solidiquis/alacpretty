@@ -43,7 +43,7 @@ func main() {
 
 Here is how you navigate the UI:
 - `h`, `j`, `k`, `l` and `←`, `↓`, `↑` , `→` are equivalent and are used to navigate inside the widget or change its appearance.
-- `H`, `J`, `K`, `L` are used to navigate across widgets, as only one can be focused on at at time.
+- `H`, `J`, `K`, `L` are used to navigate across widgets, as only one can be focused on at a time.
 
 They way in which the focus shifts between widgets is dependent upon the way you arrange your widgets in rows.
 
