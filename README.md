@@ -1,6 +1,7 @@
 # Alacpretty ‎️‍🌈
 
-**Note from author (April 2, 2021)**: Alacpretty is currently being re-written from scratch without the aid from Termui. Checkout out the repo <a href="https://github.com/solidiquis/alacpretty_v2">here</a>.
+**Note from author (April 2, 2021)**:
+Alacpretty is currently being re-written from scratch without the aid from Termui. Checkout out the repo <a href="https://github.com/solidiquis/alacpretty_v2">here</a>.
 
 <a href="https://github.com/alacritty/alacritty">Alacritty</a> is a GPU-enhanced terminal emulator; Alacpretty is a Go program that leverages <a href="https://github.com/gizak/termui">termui</a> to provide Alacritty users the ability to edit their Alacritty configurations via a terminal user-interface.
 
